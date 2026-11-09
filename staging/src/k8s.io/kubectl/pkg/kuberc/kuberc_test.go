@@ -2835,6 +2835,17 @@ func TestSearchInArgs(t *testing.T) {
 			expected: false,
 		},
 		{
+			name:      "attached shorthand value like -nmonitoring does not false-match unrelated shorthand i",
+			flagName:  "interactive",
+			shorthand: "i",
+			allShorthands: map[string]struct{}{
+				"n": {},
+				"i": {},
+			},
+			args:     []string{"-nmonitoring"},
+			expected: false,
+		},
+		{
 			name:      "flag and shorthand not present in args",
 			flagName:  "bar",
 			shorthand: "b",
