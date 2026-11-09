@@ -2764,6 +2764,98 @@ func TestGetExplicitKuberc(t *testing.T) {
 	}
 }
 
+func TestSearchInArgs(t *testing.T) {
+	tests := []struct {
+		name          string
+		flagName      string
+		shorthand     string
+		allShorthands map[string]struct{}
+		args          []string
+		expected      bool
+	}{
+		{
+			name:      "flag present in --flag format",
+			flagName:  "output",
+			shorthand: "o",
+			args:      []string{"--output", "wide"},
+			expected:  true,
+		},
+		{
+			name:      "flag present in --flag=value format",
+			flagName:  "output",
+			shorthand: "o",
+			args:      []string{"--output=wide"},
+			expected:  true,
+		},
+		{
+			name:      "shorthand present in -s format",
+			flagName:  "output",
+			shorthand: "o",
+			args:      []string{"-o", "wide"},
+			expected:  true,
+		},
+		{
+			name:      "shorthand present in -svalue format",
+			flagName:  "output",
+			shorthand: "o",
+			args:      []string{"-owide"},
+			expected:  true,
+		},
+		{
+			name:      "combined shorthands where all characters are registered shorthands",
+			flagName:  "bar",
+			shorthand: "b",
+			allShorthands: map[string]struct{}{
+				"a": {},
+				"b": {},
+				"c": {},
+			},
+			args:     []string{"-abc"},
+			expected: true,
+		},
+		{
+			name:      "combined shorthands where searched shorthand is not in group",
+			flagName:  "bar",
+			shorthand: "b",
+			allShorthands: map[string]struct{}{
+				"a": {},
+				"c": {},
+			},
+			args:     []string{"-ac"},
+			expected: false,
+		},
+		{
+			name:      "arbitrary argument containing shorthand but other characters are not shorthands",
+			flagName:  "bar",
+			shorthand: "b",
+			allShorthands: map[string]struct{}{
+				"b": {},
+			},
+			args:     []string{"-cargb"},
+			expected: false,
+		},
+		{
+			name:      "flag and shorthand not present in args",
+			flagName:  "bar",
+			shorthand: "b",
+			allShorthands: map[string]struct{}{
+				"b": {},
+			},
+			args:     []string{"get", "pods"},
+			expected: false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := searchInArgs(tc.flagName, tc.shorthand, tc.allShorthands, tc.args)
+			if actual != tc.expected {
+				t.Fatalf("searchInArgs() = %v, expected %v", actual, tc.expected)
+			}
+		})
+	}
+}
+
 // Add list of commands in nested way.
 // First iteration adds command into rootCmd,
 // Second iteration adds command into the previous one.
