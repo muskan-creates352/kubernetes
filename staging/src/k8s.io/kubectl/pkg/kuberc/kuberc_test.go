@@ -2748,6 +2748,18 @@ func TestGetExplicitKuberc(t *testing.T) {
 			args:     []string{"kubectl", "get", "--", "/bin/bash", "--kuberc", "anotherpath"},
 			expected: "",
 		},
+		{
+			args:     []string{"kubectl", "get", "pods", "-l", "app=foo--kuberc=bar"},
+			expected: "",
+		},
+		{
+			args:     []string{"kubectl", "run", "nginx", "--env=FOO=--kuberc=bar"},
+			expected: "",
+		},
+		{
+			args:     []string{"kubectl", "get", "pods", "--selector=env--kuberc="},
+			expected: "",
+		},
 	}
 	for _, test := range tests {
 		t.Run("", func(t *testing.T) {
